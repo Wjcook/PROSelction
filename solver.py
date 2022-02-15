@@ -11,7 +11,6 @@ random.seed(10)
 # seed numpy random
 TOTAL_PROS = 5
 CANDIDATE_SPACE = PROSpace(TOTAL_PROS)
-GRAPHER = graphviz.Digraph()
 GRAPH_NUM = 0
 
 
@@ -65,8 +64,17 @@ class MCTSNode:
         self.parent = parent
         self.tot = tot
         self.target_size = target_size
-        self.draw = draw_tree
+        self.d = draw_tree
 
+    def draw(self, graph, c):
+        if self.parent:
+            graph.node(str(self.PRO_state.set), "{0}:{1}".format(str(self.PRO_state.set), \
+                self.get_UCT(self.parent.num_visited, c)))
+            graph.edge(str(self.parent.PRO_state.set), str(self.PRO_state.set))
+        else:
+            graph.node(str(self.PRO_state.set), "{0}".format(str(self.PRO_state.set)))
+        for child in self.children:
+            child.draw(graph, c)
 
     def is_terminal(self):
         # Have we explored this node yet?
@@ -98,8 +106,6 @@ class MCTSNode:
             return self.greedy_choice()
 
         UCTs = [child.get_UCT(self.num_visited, c) for child in self.children]
-        print(np.argmax(UCTs))
-        print(self.children[np.argmax(UCTs)].PRO_state.set)
         return self.children[np.argmax(UCTs)]
 
     def expand(self):
@@ -127,15 +133,23 @@ class MCTSNode:
 
         cur_pros = self.PRO_state
         old_pros = self.PRO_state
+        if self.d:
+            graph = graphviz.Digraph()
+            graph.node(str(cur_pros.set))
 
         while len(cur_pros.set) < target_set_size:
             cur_pros = cur_pros.add_PRO(np.random.choice(cur_pros.get_legal_pros()))
-            if self.draw:
-                GRAPHER.node(str(cur_pros.set), "{0}".format(str(cur_pros.set)))
-                GRAPHER.edge(str(old_pros.set), str(cur_pros.set))
-                GRAPHER.render("graphs/graph{}.gv".format(GRAPH_NUM))
-                GRAPH_NUM += 1
+            if self.d:
+                if len(cur_pros.set) == target_set_size:
+                    graph.node(str(cur_pros.set), "{0}:{1}".format(str(cur_pros.set), \
+                        cur_pros.get_value()), style='filled', fillcolor='red')
+                else:
+                    graph.node(str(cur_pros.set), style='filled', fillcolor='red')
+                graph.edge(str(old_pros.set), str(cur_pros.set), label=str(cur_pros.set - old_pros.set))
             old_pros = cur_pros
+        graph.attr(label="Simulation")
+        graph.render("graphs/graph{}.gv".format(GRAPH_NUM))
+        GRAPH_NUM += 1
         return cur_pros.get_value()
 
     def back_prop(self, value):
@@ -185,15 +199,15 @@ class MonteCarloSolver:
 
 
 
-
-    def add_node(self, state):
+    def draw_tree(self, title):
         global GRAPH_NUM
-        GRAPHER.node(str(state.PRO_state.set), "{0}:{1}".format(str(state.PRO_state.set), \
-            state.get_UCT(state.parent.num_visited, self.c)))
-        if (state.parent is not None):
-            GRAPHER.edge(str(state.parent.PRO_state.set), str(state.PRO_state.set))
-        GRAPHER.render("graphs/graph{}.gv".format(GRAPH_NUM))
+        graph = graphviz.Digraph()
+        self.root.draw(graph, self.c)
+        graph.attr(label=title)
+        graph.render("graphs/graph{}.gv".format(GRAPH_NUM))
+
         GRAPH_NUM += 1
+
 
     def merge_pdf(self):
 
@@ -213,8 +227,7 @@ class MonteCarloSolver:
         for _ in range(self.iters):
             state = self.root.select_expand(self.c)
             if self.draw:
-                self.add_node(state)
-            # print(state.PRO_state.set)
+                self.draw_tree("Selection and Expansion")
             value = state.sim(self.target_set_size)
             state.back_prop(value)
 
@@ -238,7 +251,7 @@ class MonteCarloSolver:
 
 if __name__ == "__main__":
 
-    solver = MonteCarloSolver(np.sqrt(2), 10, 3, TOTAL_PROS, True)
+    solver = MonteCarloSolver(0, 10, 3, TOTAL_PROS, True)
 
     solver.solve()
     set = solver.get_solution().set
