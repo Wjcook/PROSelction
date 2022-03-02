@@ -131,3 +131,5 @@ dmypy.json
 test.py
 *.pdf
 *.gv
+*.png
+*.sp

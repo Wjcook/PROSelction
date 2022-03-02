@@ -62,10 +62,11 @@ class MCTSNode:
         self.available_PROs = self.PRO_state.get_legal_pros()
         self.children = []
         self.num_visited = 0
-        self.sum_values = 0
+        self.best_value = 0
         self.parent = parent
         self.tot = tot
         self.target_size = target_size
+        self.best_state = None
 
         self.d = draw_tree
 
@@ -89,7 +90,7 @@ class MCTSNode:
     def get_UCT(self, parent_sims, c):
         if self.num_visited == 0:
             return float('NaN')
-        return self.sum_values / self.num_visited + c * np.sqrt(np.log(parent_sims) / self.num_visited)
+        return self.best_value + c * np.sqrt(np.log(parent_sims) / self.num_visited)
 
     def greedy_choice(self):
         children = [MCTSNode(self.PRO_state.add_PRO(choice), self.tot, \
@@ -153,13 +154,15 @@ class MCTSNode:
             graph.attr(label="Simulation")
             graph.render("graphs/graph{}.gv".format(GRAPH_NUM))
             GRAPH_NUM += 1
-        return cur_pros.get_value()
+        return (cur_pros.get_value(), cur_pros)
 
-    def back_prop(self, value):
+    def back_prop(self, value, state):
         self.num_visited += 1
-        self.sum_values += value
+        if self.best_value < value:
+            self.best_value = value
+            self.best_state = state
         if self.parent is not None:
-            self.parent.back_prop(value)
+            self.parent.back_prop(value, state)
 
 
 
@@ -231,8 +234,8 @@ class MonteCarloSolver:
             state = self.root.select_expand(self.c)
             if self.draw:
                 self.draw_tree("Selection and Expansion")
-            value = state.sim(self.target_set_size)
-            state.back_prop(value)
+            value, sim_state = state.sim(self.target_set_size)
+            state.back_prop(value, sim_state)
 
         self.solved = True
 
@@ -245,34 +248,14 @@ class MonteCarloSolver:
         '''
         if not self.solved:
             raise ValueError("'solve' has not been called")
+        if self.root.best_state is not None:
+            return self.root.best_state
+
         cur_node = self.root
         for _ in range(self.target_set_size):
             cur_node = cur_node.best_choice(c=0.0)
         return cur_node.PRO_state
 
-class GreedySolver:
-
-    def __init__(self, target_set_size, total_PROs, candidates):
-        self.target_size = target_set_size
-        self.total_PROs = total_PROs
-        self.solved = False
-        self.solution = None
-        self.candidates = candidates
-
-    def solve(self):
-        set_to_go = PROSetState(set(), self.total_PROs, self.candidates)
-        for i in range(self.target_size):
-            next_choices = [set_to_go.add_PRO(choice) for choice in set_to_go.get_legal_pros()]
-            costs = [s.get_value() for s in next_choices]
-            set_to_go = next_choices[np.argmax(costs)]
-        self.solved = True
-        self.solution = set_to_go
-
-    def get_solution(self):
-        if self.solve:
-            return self.solution
-        else:
-            raise ValueError("'solve' has not been called")
 
 # if __name__ == "__main__":
 #

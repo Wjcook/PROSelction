@@ -1,5 +1,6 @@
 from functools import cmp_to_key
 import random
+from tqdm import tqdm
 
 import graphviz
 
@@ -68,38 +69,74 @@ class PROSet:
         return str(self.set) + ":" + "{0:.4f}".format(self.value)
 
 class PROSpace:
-    def __init__(self, tot):
+    def __init__(self, tot, display=False):
         #store best 5-10 optimal sets for a given set size
         self.tot = tot
+        self.solutions = [0 for i in range(tot+1)]
         s = [i for i in range(tot)]
         self.nodes = []
-        for i in range(1,1 << tot):
-            self.nodes.append(PROSet(set([s[j] for j in range(tot) if (i & (1 << j))])))
+        if display:
+            print("Creating nodes:")
+            for i in tqdm(range(1,1 << tot)):
+                self.nodes.append(PROSet(set([s[j] for j in range(tot) if (i & (1 << j))])))
+        else:
+            for i in range(1,1 << tot):
+                self.nodes.append(PROSet(set([s[j] for j in range(tot) if (i & (1 << j))])))
         self.nodes.sort(key=cmp_to_key(comp))
-
 
         l = 0
         next_start = 0
-        for i in range(len(self.nodes)):
-            node = self.nodes[i]
-            if (l == 0 or l == 1):
-                node.value = random.uniform(INIT_VALUE_RANGE[0], INIT_VALUE_RANGE[1])
-            if len(node.set) != l:
-                l += 1
-                if l != tot:
-                    for j in range(i, len(self.nodes)):
-                        if len(self.nodes[j].set) != l:
-                            next_start = j
-                            break
-            node.next = [None for j in range(tot)]
-            for j in range(next_start, len(self.nodes)):
-                if len(self.nodes[j].set) == l+2:
-                    break
-                diff = self.nodes[j].set - node.set
-                if len(diff) == 1:
-                    for i in diff:
-                        node.next[i] = j
-                        self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
+        if display:
+            print("Creating edges:")
+            for i in tqdm(range(len(self.nodes))):
+                node = self.nodes[i]
+                if (l == 0 or l == 1):
+                    node.value = random.uniform(INIT_VALUE_RANGE[0], INIT_VALUE_RANGE[1])
+                    if self.solutions[l] < node.value:
+                        self.solutions[l] = node.value
+                if len(node.set) != l:
+                    l += 1
+                    if l != tot:
+                        for j in range(i, len(self.nodes)):
+                            if len(self.nodes[j].set) != l:
+                                next_start = j
+                                break
+                node.next = [None for j in range(tot)]
+                for j in range(next_start, len(self.nodes)):
+                    if len(self.nodes[j].set) == l+2:
+                        break
+                    diff = self.nodes[j].set - node.set
+                    if len(diff) == 1:
+                        for i in diff:
+                            node.next[i] = j
+                            self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
+                            if self.solutions[l] < self.nodes[j].value:
+                                self.solutions[l] = self.nodes[j].value
+        else:
+            for i in range(len(self.nodes)):
+                node = self.nodes[i]
+                if (l == 0 or l == 1):
+                    node.value = random.uniform(INIT_VALUE_RANGE[0], INIT_VALUE_RANGE[1])
+                    if self.solutions[l-1] < node.value:
+                        self.solutions[l-1] = node.value
+                if len(node.set) != l:
+                    l += 1
+                    if l != tot:
+                        for j in range(i, len(self.nodes)):
+                            if len(self.nodes[j].set) != l:
+                                next_start = j
+                                break
+                node.next = [None for j in range(tot)]
+                for j in range(next_start, len(self.nodes)):
+                    if len(self.nodes[j].set) == l+2:
+                        break
+                    diff = self.nodes[j].set - node.set
+                    if len(diff) == 1:
+                        for i in diff:
+                            node.next[i] = j
+                            self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
+                            if self.solutions[l-1] < self.nodes[j].value:
+                                self.solutions[l-1] = self.nodes[j].value
 
     def visualize(self):
         dot = graphviz.Digraph()
@@ -113,7 +150,7 @@ class PROSpace:
         dot.node("-1", "{}")
         for i in range(self.tot):
             dot.edge("-1", str(i))
-        dot.render('bet.gv', view=True)
+        dot.render('Test_space.gv', view=False)
 
     def get_value(self, set):
         i = bisect_left(self.nodes, set, key=comp)
