@@ -1,0 +1,38 @@
+#Configuration File Example
+#Follows the YAML configuation file formation
+
+#All lines starting with a "#" are comments and are ignored by the parser, so can be used to label or explain things as needed. Empty lines will also be skipped
+
+#This example file has extra comments to explain what different parts do and can be left out of other files.
+#Also note that the fields do not need to be in this order, but this order is recommended for readability
+ 
+ 
+
+#time (time steps over which to evaluate. Start, stop,step size in seconds. More points result in slower execution. Choosing a staring time other than 0 only affects the axis of the output graphs and the relation to the reported epoch when exporting. It is recommended to leave this as 0 for consistency). Note that very long time windows will evenutally result in errors. The ISLR constraint is heavier than the others, and times > 29 days will cause it to break. For optimization a time window of .5 days is recommended. 
+
+time: #Note that any expression here will be evaluated
+  start: 0
+  end: 24*3600
+  step: 10
+  
+grid: #Note that any expression here will be evaluated
+  x_range: (-2, 5)
+  y_range: (-2, 12)
+  z_range: (-2, 5)
+  num_orbits: 27
+#Chief orbit parameters
+#altitude (orbit altitude in km. For non-circular orbit, use semi-major axis - Earth's radius)
+altitude: 747
+#Eccentricty
+ecc: 0
+#Inclination (in degrees)
+inc: 98.4
+#Right ascension of the ascending node (Omega, in degrees)
+RAAN: 0
+#Argument of Periapsis (omega, in degrees)
+omega: 0
+#Initial angle from the ascending node (in degrees)
+theta: 0
+
+
+

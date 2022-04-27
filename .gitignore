@@ -133,3 +133,4 @@ test.py
 *.gv
 *.png
 *.sp
+*.npy

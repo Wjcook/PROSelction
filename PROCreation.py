@@ -69,9 +69,9 @@ class PROSet:
         return str(self.set) + ":" + "{0:.4f}".format(self.value)
 
 class PROSpace:
-    def __init__(self, tot, display=False):
-        #store best 5-10 optimal sets for a given set size
+    def __init__(self, tot, display=False, create_edges=False):
         self.tot = tot
+        self.create_edges = create_edges
         self.solutions = [0 for i in range(tot+1)]
         s = [i for i in range(tot)]
         self.nodes = []
@@ -83,7 +83,10 @@ class PROSpace:
             for i in range(1,1 << tot):
                 self.nodes.append(PROSet(set([s[j] for j in range(tot) if (i & (1 << j))])))
         self.nodes.sort(key=cmp_to_key(comp))
-
+        if create_edges:
+            self.construct_edges(display, tot)
+        
+    def construct_edges(self, display, tot):
         l = 0
         next_start = 0
         if display:
@@ -137,8 +140,9 @@ class PROSpace:
                             self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
                             if self.solutions[l-1] < self.nodes[j].value:
                                 self.solutions[l-1] = self.nodes[j].value
-
     def visualize(self):
+        if not self.create_edges:
+            raise ValueError("Edges were not instantiated at creation of this object.")
         dot = graphviz.Digraph()
         for i in range(len(self.nodes)):
             dot.node(str(i), str(self.nodes[i]))
