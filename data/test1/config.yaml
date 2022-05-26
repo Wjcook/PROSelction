@@ -1,0 +1,17 @@
+c: 1.2
+max_iters: 500
+poi_method: nom
+res: 100
+seeds:
+- 1
+- 2
+- 3735928559
+spaces:
+- 20_x=(-2, 5)_y=(-2, 12)_z=(-2, 5).npy
+- 16_x=(-2, 5)_y=(-2, 12)_z=(-2, 5).npy
+- 10_x=(-2, 5)_y=(-2, 12)_z=(-2, 5).npy
+- 14_x=(-2, 5)_y=(-2, 12)_z=(-2, 5).npy
+- 12_x=(-2, 5)_y=(-2, 12)_z=(-2, 5).npy
+target_size: 6
+
+# This is a test data set to run the visualization code on. The resolution is turned way up to make the code run fast for testing purposes.

@@ -1,9 +1,13 @@
+from tqdm import tqdm
 import pro_lib
 import yaml
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from itertools import combinations
+import math
+import time
 
 #Class constants (Earth parameters) can be overwritten locally or when calling the utility methods
 mu = 398600.432896939164493230  #gravitational constant
@@ -11,8 +15,8 @@ r_e = 6378.136  # Earth Radius
 J2 = 0.001082627 #J2 Constant
 TARGET_CRAFT_RAD = 10 / 1000 # Modeling the target spacecraft as a sphere with radius(km)
 
-TAN_VISI_HALF_ANGLE = np.tan(np.pi / 4)
-W = 0.1 # Estimated basic variance based on the prior model of the target spacecraft
+TAN_VISI_HALF_ANGLE = np.tan(np.pi / 18)
+W = 10 # Estimated basic variance based on the prior model of the target spacecraft
 
 def compute_orbit_dynamics(state,orbParams):
     """
@@ -70,6 +74,41 @@ def cost_function(state_vector, pois):
                     fps += (1 / np.linalg.norm(p - s)**2)
         H += 1 / ( (1 / W) + fps)
     return H
+
+def find_min_cost(state_vector, pois, orbit_cardinality, MAX_TIME=None):
+    """
+    Calculates the subset of orbits that achiueves the minimum cost.
+    State_vector: Numpy array of shape (num_deputies, num_time_segments, 6)
+
+    Returns a tuple of the minimum cost and the list of indices into state_vector array that achieved it
+    """
+    if (len(state_vector) > 35):
+        return (0, None)
+    indices = list(combinations(list(range(len(state_vector))), orbit_cardinality))
+    min = 1 << 10
+    min_indices = []
+    costs = []
+
+    s = time.time()
+
+    for i in range(10):
+        cost = cost_function(state_vector[list(indices[i])], pois)
+        costs.append(cost)
+        if min > cost:
+            min = cost
+            min_indices = list(indices[i])
+    e = time.time()
+
+    if MAX_TIME is not None and MAX_TIME < (e-s) * (len(indices) / 10):
+        return (0,0)
+    for i in tqdm(range(10, len(indices))):
+        cost = cost_function(state_vector[list(indices[i])], pois)
+        costs.append(cost)
+        if min > cost:
+            min = cost
+            min_indices = list(indices[i])
+    return (min, min_indices, costs)
+        
 
 def is_visible(p, s):
     s_hat = s / np.linalg.norm(s)
@@ -195,14 +234,23 @@ def construct_grid(num_orbits, x_range, y_range, z_range):
     min_x, max_x = x_range
     min_y, max_y = y_range
     min_z, max_z = z_range
-    X = np.linspace(min_x, max_x, num=int(np.cbrt(num_orbits)))
-    Y = np.linspace(min_y, max_y, num=int(np.cbrt(num_orbits)))
-    Z = np.linspace(min_z, max_z, num=int(np.cbrt(num_orbits)))
+    X = np.linspace(min_x, max_x, num=int(math.ceil(np.cbrt(num_orbits))))
+    Y = np.linspace(min_y, max_y, num=int(math.ceil(np.cbrt(num_orbits))))
+    Z = np.linspace(min_z, max_z, num=int(math.ceil(np.cbrt(num_orbits))))
     new_orbits = []
     for x in X:
         for y in Y:
             for z in Z:
-                new_orbits.append([x,y,z])
+                if (x > 2 * TARGET_CRAFT_RAD and y > 2 * TARGET_CRAFT_RAD and z > 2 * TARGET_CRAFT_RAD):
+                    new_orbits.append([x,y,z])
+
+    diff = len(new_orbits) - num_orbits
+
+    if diff < 0:
+        return np.array(new_orbits)
+    elif diff > 0 :
+        new_orbits = new_orbits[int(diff/2) + 1:]
+        new_orbits = new_orbits[:(-1*int(diff - diff/2))]
     return np.array(new_orbits)
 
 def KE(V):
@@ -297,12 +345,17 @@ def test_visi(state_vector, poi, azim=-100, elev=43):
     ax.set_xlim(-scale, scale)
     ax.set_ylim(-scale, scale)
     ax.set_zlim(-scale, scale)
+    visible_points = []
     for dep in state_vector:
         ax.plot(dep[:, 0], dep[:, 1], dep[:, 2])
         for p in dep[:, 0:3]:
             if is_visible(p, poi):
-                ax.scatter(p[0], p[1], p[2])
+                # ax.scatter(p[0], p[1], p[2])
+                visible_points.append(p)
+
     ax.scatter(poi[0], poi[1], poi[2])
+    visible_points = np.array(visible_points)
+    ax.plot(visible_points[:,0], visible_points[:,1], visible_points[:,2])
     (X,Y,Z) = get_cone_mesh(scale,poi)
     ax.plot_surface(X, Y, Z, alpha=0.3, color="blue")
     plt.show()

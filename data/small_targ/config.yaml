@@ -1,0 +1,13 @@
+c: 1.2
+max_iters: 1000
+poi_method: nom
+res: 12
+seeds:
+- 1
+- 2
+- 3735928559
+- 4293832977
+- 318740599
+spaces:
+- 22_x=(-1, 1)_y=(-1, 1)_z=(-1, 1).npy
+target_size: 4

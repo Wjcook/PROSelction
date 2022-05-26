@@ -1,0 +1,21 @@
+# spaces:
+#   - 22_x=(-1, 1)_y=(-1, 1)_z=(-1, 1).npy
+
+iteration_max: 500
+
+poi_method: nom
+
+seeds:
+  - 1
+  # - 2
+  # - 0xDEADBEEF
+  # - 0xFFEEB111
+  # - 0x12FF9877
+
+c: 1.2
+
+target_size: 4
+
+# The resolution factor controls how quickly we sample the target space craft
+# For example, if res_factor=2 then we sample at every other measurement
+resolution_factor: 12

@@ -1,0 +1,9 @@
+c: 1.2
+max_iters: 1000
+poi_method: nom
+res: 12
+seeds:
+- 1
+spaces:
+- 12_x=(-0.5, 0.5)_y=(-0.5, 0.5)_z=(-0.5, 0.5).npy
+target_size: 6

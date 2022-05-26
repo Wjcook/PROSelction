@@ -5,7 +5,7 @@ from tqdm import tqdm
 import graphviz
 
 
-INIT_VALUE_RANGE = [0.1, 0.4]
+INIT_VALUE_RANGE = [1.0, 0.8]
 
 def comp(l, r):
     if (l.set == r.set):
@@ -95,7 +95,7 @@ class PROSpace:
                 node = self.nodes[i]
                 if (l == 0 or l == 1):
                     node.value = random.uniform(INIT_VALUE_RANGE[0], INIT_VALUE_RANGE[1])
-                    if self.solutions[l] < node.value:
+                    if self.solutions[l] > node.value or self.solutions[l] == 0:
                         self.solutions[l] = node.value
                 if len(node.set) != l:
                     l += 1
@@ -112,15 +112,15 @@ class PROSpace:
                     if len(diff) == 1:
                         for i in diff:
                             node.next[i] = j
-                            self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
-                            if self.solutions[l] < self.nodes[j].value:
+                            self.nodes[j].value = min(random.uniform(node.value / 1.5, node.value), self.nodes[j].value) if self.nodes[j].value != 0 else random.uniform(node.value / 1.5, node.value)
+                            if self.solutions[l] > self.nodes[j].value or self.solutions[l] == 0:
                                 self.solutions[l] = self.nodes[j].value
         else:
             for i in range(len(self.nodes)):
                 node = self.nodes[i]
                 if (l == 0 or l == 1):
                     node.value = random.uniform(INIT_VALUE_RANGE[0], INIT_VALUE_RANGE[1])
-                    if self.solutions[l-1] < node.value:
+                    if self.solutions[l-1] > node.value:
                         self.solutions[l-1] = node.value
                 if len(node.set) != l:
                     l += 1
@@ -137,8 +137,8 @@ class PROSpace:
                     if len(diff) == 1:
                         for i in diff:
                             node.next[i] = j
-                            self.nodes[j].value = max(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
-                            if self.solutions[l-1] < self.nodes[j].value:
+                            self.nodes[j].value = min(random.uniform(node.value, (l+1) / self.tot), self.nodes[j].value)
+                            if self.solutions[l-1] > self.nodes[j].value:
                                 self.solutions[l-1] = self.nodes[j].value
     def visualize(self):
         if not self.create_edges:

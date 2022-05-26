@@ -12,14 +12,14 @@
 
 time: #Note that any expression here will be evaluated
   start: 0
-  end: 24*3600
-  step: 10
+  end: 100*60
+  step: 5
   
 grid: #Note that any expression here will be evaluated
-  x_range: (-2, 5)
-  y_range: (-2, 12)
-  z_range: (-2, 5)
-  num_orbits: 27
+  x_range: (-1, 1)
+  y_range: (-1, 1)
+  z_range: (-1, 1)
+  num_orbits: 12
 #Chief orbit parameters
 #altitude (orbit altitude in km. For non-circular orbit, use semi-major axis - Earth's radius)
 altitude: 747

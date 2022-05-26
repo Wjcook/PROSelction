@@ -134,3 +134,4 @@ test.py
 *.png
 *.sp
 *.npy
+*.ex

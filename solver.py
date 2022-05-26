@@ -184,7 +184,7 @@ class MonteCarloSolver:
     subset of PROs that maximize/minimize some value.
     '''
 
-    def __init__(self, c, iters, target_set_size, pro_candidates, pois, draw_tree=False):
+    def __init__(self, c, iters, target_set_size, pro_candidates, pois, seed_tree=False, draw_tree=False):
         '''
         @PARAMS:
         c - exploration parameter. The larger the value the more the solver will
@@ -210,6 +210,7 @@ class MonteCarloSolver:
 
         self.root = MCTSNode(PROSetState(set([]), len(pro_candidates), [], self.pois), target_set_size, pro_candidates, draw_tree=draw_tree)
         self.draw = draw_tree
+        self.seed_tree = seed_tree
 
 
 
@@ -238,6 +239,13 @@ class MonteCarloSolver:
         The actual solving algorithm. The steps of the algorithm follow the main
         steps of the MCTS algorithm: selection, expansion, simulation, and backprogation.
         '''
+        if self.seed_tree :
+            state = self.root
+            for _ in range(self.iters):
+                state = state.greedy_choice()
+                value, sim_state = state.sim(self.target_set_size)
+                state.back_prop(value, sim_state)
+    
         for _ in range(self.iters):
             state = self.root.select_expand(self.c)
             if self.draw:
