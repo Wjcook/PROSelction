@@ -19,7 +19,9 @@ grid: #Note that any expression here will be evaluated
   x_range: (-1, 1)
   y_range: (-1, 1)
   z_range: (-1, 1)
-  num_orbits: 12
+  num_orbits: [12] # This must be of type list
+
+
 #Chief orbit parameters
 #altitude (orbit altitude in km. For non-circular orbit, use semi-major axis - Earth's radius)
 altitude: 747

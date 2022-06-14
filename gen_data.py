@@ -4,7 +4,7 @@ from os import listdir
 import os
 from os.path import isfile, join
 import numpy as np
-from proIntUtils import gen_poi, find_min_cost
+from pro_creation.proIntUtils import gen_poi, find_min_cost
 from run_solvers import sim_iters, run_greedy
 import csv
 import time

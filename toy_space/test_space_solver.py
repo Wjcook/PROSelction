@@ -273,7 +273,7 @@ class GreedySolver:
         self.pro_candidates = pro_candidates
 
     def solve(self):
-        set_to_go = PROSetState(set(), len(self.pro_candidates), [])
+        set_to_go = PROSetState(set(), len(self.pro_candidates.nodes), self.pro_candidates)
         for i in range(self.target_size):
             next_choices = [set_to_go.add_PRO(choice) for choice in set_to_go.get_legal_pros()]
             costs = [s.get_value() for s in next_choices]

@@ -1,3 +1,9 @@
+"""
+This file gives integration utilities to the pro creation script.
+It gives function that integrate the PRO forward giving state as a function of time
+as well as calculating the cost of a certain pro given a set of POIs.
+"""
+
 from tqdm import tqdm
 import pro_lib
 import yaml

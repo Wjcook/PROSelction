@@ -3,8 +3,8 @@ from random import randint
 from PyPDF2 import PdfFileMerger
 
 import numpy as np
-from PROCreation import *
-from proIntUtils import cost_function
+# from PROCreation import *
+from pro_creation.proIntUtils import cost_function
 
 
 # random.seed(10)

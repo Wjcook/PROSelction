@@ -1,24 +1,27 @@
-from multiprocessing import Pool
-from matplotlib.pyplot import grid
 import numpy as np
 from proIntUtils import *
 from proYamlUtils import *
-from os import listdir
+from os import listdir, makedirs, path
 from os.path import isfile, join
+import sys, getopt
 
 KE_CUTOFF = 1000 # Energy cutoff for orbits from the grid. TODO what is a good cutoff that makes sense?
 
+def mkdir_p(p):
+    try:
+        makedirs(p)
+    except OSError as exc: # Python >2.5
+        if path.isdir(p):
+            pass
+        else: raise
 
-PRO_DIR = "pro_spaces_nozero"
-
-
-def create_space(config="example_config.yaml"):
+def create_space(config, pro_dir):
     "Saves a numpy array to disk with dimensions (num_deps, time_steps, 6)"
+    mkdir_p(pro_dir)
     (orbit_params, grid_config) = get_config_dict(config)
     T = orbit_params["time"] # Times that the orbit is evaluated
-    for i in range(12, 200, 4) :
-        grid_config['num_orbits'] = i
-        orbit_grid = construct_grid(grid_config['num_orbits'], grid_config['x_range'], grid_config['y_range'], grid_config['z_range'])
+    for i in grid_config['num_orbits']:
+        orbit_grid = construct_grid(i, grid_config['x_range'], grid_config['y_range'], grid_config['z_range'])
         orbit_params["num_deputy"] = len(orbit_grid)
         orbit_states = compute_orbit_dynamics(orbit_grid, orbit_params)
         # animation_tools(orbit_states)
@@ -33,7 +36,7 @@ def create_space(config="example_config.yaml"):
         pro_candidates = np.array(pro_candidates)
         if (len(pro_candidates) == 0):
             continue
-        files = [f for f in listdir(PRO_DIR) if isfile(join(PRO_DIR, f))]
+        files = [f for f in listdir(pro_dir) if isfile(join(pro_dir, f))]
         fname = "{}_x={}_y={}_z={}.npy".format(len(pro_candidates), grid_config['x_range'], grid_config['y_range'], grid_config['z_range'])
         i = 1
         while fname in files:
@@ -42,7 +45,7 @@ def create_space(config="example_config.yaml"):
         # test_visi(pro_candidates[2:3], [0, 0, -0.2])
         # print(pro_candidates.shape)
         # print(find_min_cost(pro_candidates, gen_poi(), 6))
-        np.save(join(PRO_DIR, fname), pro_candidates)
+        np.save(join(pro_dir, fname), pro_candidates)
 
     
 
@@ -71,6 +74,20 @@ if __name__ == "__main__":
     #Get indexes of lowest cost
     # costs = np.array(costs)
 
-
-    create_space()
     # get_cone_mesh(5, [0,0,0])
+    optlst, args = getopt.getopt(sys.argv[1:], "c:", ["config="])
+    config_file = "example_config.yaml"
+    pro_dir = None
+    for o, a in optlst:
+        if o in ('-c', '--config'):
+            config_file = a
+        else:
+            print("WRONG ARGUMENTS")
+            exit(1)
+    if len(args) > 0:
+        pro_dir = args[0]
+    else:
+        print("Usage: proIntCreation.py output_dir [-c config_file]")
+        exit(1)
+
+    create_space(config_file, pro_dir)

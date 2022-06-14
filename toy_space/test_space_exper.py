@@ -34,7 +34,7 @@ def run_greedy(target_size, space):
     tot_time = 0
     tot_val = 0
     for i in range(SIMS):
-        solver = GreedySolver(target_size, space.nodes)
+        solver = GreedySolver(target_size, space)
         s = time.time()
         solver.solve()
         soln = solver.get_solution()
@@ -111,10 +111,11 @@ def exper_a_mcts_vs_greedy(spaces, size):
     # plt.ylabel("Runtime(s)")
     # plt.show()
     # plt.savefig('figs/a_mcts_vs_greedy_runtime_stats_{}.png'.format(size))
+    ones = np.ones(global_perf.shape)
     plt.figure(2)
     plt.scatter(spaces, g_perf/global_perf, color='green', label='Greedy')
     plt.scatter(spaces, m_perf/global_perf, color='blue', label='MCTS')
-    plt.scatter(spaces, global_perf, color='red', label='Global')
+    plt.scatter(spaces, ones, color='red', label='Global')
     plt.legend()
     plt.title("Performance of Greedy vs. Altered MCTS with 150 iterations")
     plt.xlabel("Number of PROs in Candidate Space")
@@ -126,4 +127,4 @@ def exper_a_mcts_vs_greedy(spaces, size):
 if __name__ == "__main__":
     # exper_a_mcts_perf_by_iters(TEST_SPACE, TEST_SIZE, range(9000))
     # exper_mcts_vs_greedy(range(6,15), TEST_SIZE)
-    exper_a_mcts_vs_greedy(range(8,16), TEST_SIZE)
+    exper_a_mcts_vs_greedy(range(8,15), TEST_SIZE)
