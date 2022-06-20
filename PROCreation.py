@@ -59,7 +59,17 @@ def bisect_left(a, x, lo=0, hi=None, *, key=None):
     return lo
 
 class PROSet:
-
+    """Class for storing groups of PROs.
+    
+    Attributes
+    ----------
+    set : ..
+        [TODO]
+    value : float
+        The value of this PRO set, found through view angle integration.
+    next : ..
+        [TODO]
+    """
     def __init__(self, set):
         self.set = set
         self.value = 0
@@ -69,7 +79,23 @@ class PROSet:
         return str(self.set) + ":" + "{0:.4f}".format(self.value)
 
 class PROSpace:
+    """"Class for storing groups of PROs.
+    
+    How are PROSpace's different from PROSet's?
+    
+    Attributes
+    ----------
+    tot : int
+        [TODO]
+    display : bool
+        Whether this PROspace progress will be displayed via tqdm.
+    nodes : ..
+        [TODO]
+    [TODO] other?
+    """
     def __init__(self, tot, display=False):
+        # [TODO] I'm not super sure (high-level) what is occuring in this init.
+        #   What is the difference between a PROspace and a PROset? (PROspace is the set of all available PROs?)
         #store best 5-10 optimal sets for a given set size
         self.tot = tot
         self.solutions = [0 for i in range(tot+1)]
@@ -82,6 +108,7 @@ class PROSpace:
         else:
             for i in range(1,1 << tot):
                 self.nodes.append(PROSet(set([s[j] for j in range(tot) if (i & (1 << j))])))
+                # what is going on the above line?
         self.nodes.sort(key=cmp_to_key(comp))
 
         l = 0
@@ -155,7 +182,7 @@ class PROSpace:
     def get_value(self, set):
         i = bisect_left(self.nodes, set, key=comp)
         if i < len(self.nodes):
-            return self.nodes[i].value
+            return self.nodes[i].value # how is this value here generated? What is the datatype of an element of nodes?
         else:
             raise ValueError
 
