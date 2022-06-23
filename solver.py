@@ -23,6 +23,22 @@ class PROSetState:
     '''
 
     def __init__(self, set, total_PROs, states, pois):
+        """Initializes a PROSetState.
+
+        Attributes
+        ----------
+        set : (Python) set of int
+            The ground set of PROs, stored as integers.
+        total_PROs : int
+            Total number of PROs.
+        legal_PROs : list of int
+            What PROs are able to be added (meaning they are not currently in set).
+        cost : float
+            The information cost of this set of PROs.
+        pois : array of 3-vectors
+            Points of interest on the object to-be-inspected.
+
+        """
         self.set = set
         self.total_PROs = total_PROs
         self.legal_PROs = []
@@ -63,6 +79,31 @@ class MCTSNode:
     and the nodes that have yet to be explored yet.
     '''
     def __init__(self, set_state, target_size, pro_candidates, parent=None, draw_tree=False):
+        """Initializes a MCTS node.
+
+        Attributes
+        ----------
+        PRO_state : PROSetState
+            What PROs are contained in this node - the ground set of the node.
+        available_PROs : set of int
+            What PROs are able to be added to this node's set (meaning: they are not currently in the set).
+        children : list of MCTSNode
+            All children that have this node as a parent.
+        num_visited : int
+            Number of times this node has been visited by the MCTS algorithm.
+        best_value : float
+            The best value encountered below this node in the tree.
+        parent : MCTSNode
+            The parent node of this node.
+        pro_candidates : [TODO] data type?
+            [TODO] what is this? we do something with indexing into it when creating a new node.
+        target_size : int
+            The final number of PROs in a set (e.g. 5).
+        best_state : PROSetState
+            The best set contained below this node in the tree.
+        d : bool
+            Whether to draw the tree.
+        """
         self.PRO_state = set_state
         # Init the available PROs to all legal pros then as we explore more children pop
         # from this list
@@ -98,6 +139,8 @@ class MCTSNode:
         if self.num_visited == 0:
             return float('NaN')
         return self.best_value - c * np.sqrt(np.log(parent_sims) / self.num_visited)
+        # [TODO} is there a paper about this UCT algorithm? I expect UCT to be Q/N + c*sqrt(log(parent_sims)/visits)
+        #   whereas here we use the best value rather than Q/N, and there's a minus on the exploration term rather than plus.
 
     def greedy_choice(self):
         children = [MCTSNode(self.PRO_state.add_PRO(choice, self.pro_candidates[choice]), self.tot, \
@@ -119,7 +162,7 @@ class MCTSNode:
         return self.children[np.argmin(UCTs)]
 
     def expand(self):
-        next_pro = self.available_PROs.pop()
+        next_pro = self.available_PROs.pop() # [TODO] it seems to me that we pull the first PRO off of available_PROs. why is this the PRO that is expanded to?
         next_child = MCTSNode(self.PRO_state.add_PRO(next_pro, self.pro_candidates[next_pro]), self.target_size, self.pro_candidates, parent=self, draw_tree=self.d)
         self.children.append(next_child)
         return next_child
@@ -166,6 +209,8 @@ class MCTSNode:
 
     def back_prop(self, value, state):
         self.num_visited += 1
+        # [TODO] do we backpropagate value too? it seems we are backpropping 'best value' instead
+        # does MCTS still explore as we expect when doing UCT based on best-value rather than average value?
         if self.best_value > value:
             self.best_value = value
             self.best_state = state
@@ -194,7 +239,8 @@ class MonteCarloSolver:
 
         target_set_size - The size of the subset of PROs to search for
 
-
+        seed_tree : bool
+            Seeds the Monte-Carlo tree with a single greedy choice.
 
         '''
         self.c=c
@@ -279,6 +325,9 @@ class MonteCarloSolver:
         cur_node = self.root
         for _ in range(self.target_set_size):
             cur_node = cur_node.best_choice(c=0.0)
+            # This has the algorithm select the next best action by picking the highest
+                # _average_ value node ('max child' choice). Another common option is 'robust child', which is picking the one with
+                # the highest visit count. I wonder if there would be performance changes b/w the two.
         return cur_node.PRO_state
 
 

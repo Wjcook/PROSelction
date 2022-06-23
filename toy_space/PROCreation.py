@@ -61,8 +61,17 @@ def bisect_left(a, x, lo=0, hi=None, *, key=None):
 class PROSet:
 
     def __init__(self, set):
+        """Initializes a PROSet.
+
+        Attributes
+        ----------
+        set : set
+            Set of PROs.
+        value : float
+            Value associated with this set of PROs.
+        """
         self.set = set
-        self.value = 0
+        self.value = 0 # is this attribute used/set anywhere else?
         self.next= []
 
     def __str__(self):
@@ -70,7 +79,21 @@ class PROSet:
 
 class PROSpace:
     def __init__(self, tot, display=False, create_edges=False):
-        self.tot = tot
+        """Initializes a PROSpace.
+        
+        Attributes
+        ----------
+        tot : ..
+            [TODO: what does tot represent (total number of PROs to choose from? set size?)? data type?]
+        nodes : array of PROSet (?)
+            Each node in the search space (see thesis Figure 1 (I think) [TODO: clarify if this is right])
+        display : bool
+            Whether to display tqdm's.
+        create_edges : bool
+            Whether to construct edges between nodes when instantiating this object.
+        
+        """
+        self.tot = tot # data type here?
         self.create_edges = create_edges
         self.solutions = [0 for i in range(tot+1)]
         s = [i for i in range(tot)]
