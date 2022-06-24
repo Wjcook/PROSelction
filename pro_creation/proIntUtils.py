@@ -87,8 +87,6 @@ def find_min_cost(state_vector, pois, orbit_cardinality, MAX_TIME=None):
     State_vector: Numpy array of shape (num_deputies, num_time_segments, 6)
 
     Returns a tuple of the minimum cost and the list of indices into state_vector array that achieved it.
-
-    [TODO] If I understand correctly, this is the ground truth minimum orbit configuration?
     """
     if (len(state_vector) > 35):
         return (0, None)

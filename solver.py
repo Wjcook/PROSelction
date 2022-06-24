@@ -33,6 +33,8 @@ class PROSetState:
             Total number of PROs.
         legal_PROs : list of int
             What PROs are able to be added (meaning they are not currently in set).
+        states : list of list of list float, shape (len(set), num_time_steps, 6) 6 being 3 pos + 3 vel
+            Contains states (position and velocities) of deputies during each PRO.
         cost : float
             The information cost of this set of PROs.
         pois : array of 3-vectors
@@ -95,8 +97,8 @@ class MCTSNode:
             The best value encountered below this node in the tree.
         parent : MCTSNode
             The parent node of this node.
-        pro_candidates : [TODO] data type?
-            [TODO] what is this? we do something with indexing into it when creating a new node.
+        pro_candidates : list of list of list of float, shape (size_of_PRO_library, num_time_steps, 6) 6 = 3 pos + 3 vel
+            Contains states (position and velocities) of deputies during each PRO (master list).
         target_size : int
             The final number of PROs in a set (e.g. 5).
         best_state : PROSetState
