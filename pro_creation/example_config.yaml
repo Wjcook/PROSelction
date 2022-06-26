@@ -19,7 +19,7 @@ grid: #Note that any expression here will be evaluated
   x_range: (-1, 1)
   y_range: (-1, 1)
   z_range: (-1, 1)
-  num_orbits: [12] # This must be of type list
+  num_orbits: [4] # This must be of type list
 
 
 #Chief orbit parameters

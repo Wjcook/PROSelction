@@ -263,7 +263,7 @@ def KE(V):
     return 0.5 * np.linalg.norm(V) ** 2
 
 
-def gen_poi(num_pois=6, random=False):
+def gen_poi(num_pois=6, random=False) -> list:
     """
     Generates a set of points on a sphere with radius 10 meters. This sphere
     represents the target spacecraft and the points are points of interest on

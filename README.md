@@ -23,9 +23,9 @@ Note a number will be appended if multiple of the same file name are present.
 
 To create a new data set run the gen_data script as follows
 
-python3 gen_data.py [-t seconds_to_run] [-o]
+python3 gen_data.py [config_file] [-t seconds_to_run] [-o]
 
-The -t option skips running the solvers and simply runs the optimum algorithm on the spaces
+The -t option runs the optimum algorithm on the spaces
 for a certain number of seconds. The -o option skips finding the optimum and only
 runs the simulations. This data will be written under the data directory under a subdirectory
 with the current date and time. This directory saves the config file that was used to generate the data.

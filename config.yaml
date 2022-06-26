@@ -28,4 +28,4 @@ target_size: 4
 
 # The resolution factor controls how quickly we sample the target space craft
 # For example, if res_factor=2 then we sample at every other measurement
-resolution_factor: 12
+resolution_factor: 15

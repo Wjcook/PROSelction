@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # get_cone_mesh(5, [0,0,0])
     optlst, args = getopt.getopt(sys.argv[1:], "c:", ["config="])
-    config_file = "example_config.yaml"
+    config_file = "pro_creation/example_config.yaml"
     pro_dir = None
     for o, a in optlst:
         if o in ('-c', '--config'):

@@ -1,10 +1,13 @@
 from functools import cmp_to_key
 from random import randint
 from PyPDF2 import PdfFileMerger
+from matplotlib.style import available
 
 import numpy as np
 # from PROCreation import *
 from pro_creation.proIntUtils import cost_function
+import sys
+from typing import Tuple
 
 
 # random.seed(10)
@@ -80,7 +83,7 @@ class MCTSNode:
     been visited, the sum of the information cost/value of all of its children nodes
     and the nodes that have yet to be explored yet.
     '''
-    def __init__(self, set_state, target_size, pro_candidates, parent=None, draw_tree=False):
+    def __init__(self, set_state: PROSetState, target_size: int, pro_candidates: list, parent=None, draw_tree=False):
         """Initializes a MCTS node.
 
         Attributes
@@ -112,7 +115,8 @@ class MCTSNode:
         self.available_PROs = self.PRO_state.get_legal_pros()
         self.children = []
         self.num_visited = 0
-        self.best_value = 100000
+        self.best_value = None
+        self.sum_vals = 0 # used to compute the average value int UCT calc
         self.parent = parent
         self.pro_candidates = pro_candidates
         self.target_size = target_size
@@ -137,10 +141,10 @@ class MCTSNode:
     def is_expanded(self):
         return len(self.available_PROs) == 0
 
-    def get_UCT(self, parent_sims, c):
+    def get_UCT(self, parent_sims: int, c: float):
         if self.num_visited == 0:
             return float('NaN')
-        return self.best_value - c * np.sqrt(np.log(parent_sims) / self.num_visited)
+        return (self.sum_vals / self.num_visited) - c * np.sqrt(np.log(parent_sims) / self.num_visited)
         # [TODO} is there a paper about this UCT algorithm? I expect UCT to be Q/N + c*sqrt(log(parent_sims)/visits)
         #   whereas here we use the best value rather than Q/N, and there's a minus on the exploration term rather than plus.
 
@@ -164,7 +168,8 @@ class MCTSNode:
         return self.children[np.argmin(UCTs)]
 
     def expand(self):
-        next_pro = self.available_PROs.pop() # [TODO] it seems to me that we pull the first PRO off of available_PROs. why is this the PRO that is expanded to?
+        rand_ind = np.random.randint(len(self.available_PROs))
+        next_pro = self.available_PROs.pop(rand_ind)
         next_child = MCTSNode(self.PRO_state.add_PRO(next_pro, self.pro_candidates[next_pro]), self.target_size, self.pro_candidates, parent=self, draw_tree=self.d)
         self.children.append(next_child)
         return next_child
@@ -183,7 +188,7 @@ class MCTSNode:
                 cur = cur.best_choice(c)
         return cur
 
-    def sim(self, target_set_size):
+    def sim(self, target_set_size: int) -> Tuple[float, PROSetState]:
         global GRAPH_NUM
 
         cur_pros = self.PRO_state
@@ -209,11 +214,12 @@ class MCTSNode:
             GRAPH_NUM += 1
         return (cur_pros.get_value(), cur_pros)
 
-    def back_prop(self, value, state):
+    def back_prop(self, value: float, state: PROSetState) -> None:
         self.num_visited += 1
+        self.sum_vals += value
         # [TODO] do we backpropagate value too? it seems we are backpropping 'best value' instead
         # does MCTS still explore as we expect when doing UCT based on best-value rather than average value?
-        if self.best_value > value:
+        if self.best_value is None or self.best_value > value:
             self.best_value = value
             self.best_state = state
         if self.parent is not None:
@@ -231,7 +237,7 @@ class MonteCarloSolver:
     subset of PROs that maximize/minimize some value.
     '''
 
-    def __init__(self, c, iters, target_set_size, pro_candidates, pois, seed_tree=False, draw_tree=False):
+    def __init__(self, c: float, iters: int, target_set_size: int, pro_candidates: list, pois: list, seed_tree=False, draw_tree=False):
         '''
         @PARAMS:
         c - exploration parameter. The larger the value the more the solver will

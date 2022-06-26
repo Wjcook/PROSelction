@@ -4,11 +4,13 @@ from os import listdir
 import os
 from os.path import isfile, join
 import numpy as np
+import sys, getopt
+sys.path.append('pro_creation')
 from pro_creation.proIntUtils import gen_poi, find_min_cost
 from run_solvers import sim_iters, run_greedy
 import csv
 import time
-import sys, getopt
+
 import matplotlib.pyplot as plt
 
 
@@ -186,16 +188,22 @@ if __name__ == "__main__":
     max_time = None
     run_sims = True
     get_opts = True
+    config = "config.yaml"
     for o, a in optlst:
         if o in ('-t', '--time'):
             max_time = int(a)
-            run_sims = False
         elif o == '-o':
             get_opts = False
+        elif o == '-s':
+            run_sims = False
         else:
-            print("WRONG ARGUMENTS")
+            print("""Usage:
+                python3 gen_data.py [config_file] [-t max_time] [-o]
+                    -t max_time: the maximum time allowed for the program to compute the global optimum
+                    -o: do not compute any global optimums and only run simulations
+                    -s: do not run the simulations and only find optimums""")
             exit(1)
     if len(args) > 0:
-        max_time = int(args[0])
+        config = args[0]
 
-    main(run_sims=run_sims, max_time=max_time, get_opts=get_opts)
+    main(config_file=config, run_sims=run_sims, max_time=max_time, get_opts=get_opts)
